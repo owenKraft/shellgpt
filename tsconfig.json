@@ -1,0 +1,49 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@langchain/*": [
+        "node_modules/@langchain/*"
+      ],
+      "@pinecone-database/pinecone": [
+        "node_modules/@pinecone-database/pinecone"
+      ],
+      "@/*": ["./src/*"]
+    },
+    "types": [
+      "node",
+      "puppeteer"
+    ],
+    "allowJs": true,
+    "incremental": true,
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
