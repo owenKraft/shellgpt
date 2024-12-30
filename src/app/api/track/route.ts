@@ -7,7 +7,7 @@ export async function POST(req: Request) {
   try {
     track(eventName, properties);
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to track event' }, { status: 500 });
   }
 } 
