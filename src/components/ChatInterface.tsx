@@ -179,7 +179,7 @@ export default function ChatInterface() {
       "h-screen flex flex-col overflow-hidden",
       showChatLayout 
         ? "" 
-        : "justify-center items-center"
+        : "justify-between"
     )}>
       {showChatLayout ? (
         <>
@@ -302,28 +302,37 @@ export default function ChatInterface() {
           </div>
         </>
       ) : (
-        // Initial centered layout
-        <Card className="w-full max-w-3xl shadow-none bg-transparent border-none">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-1">
-              <Terminal className="h-5 w-5 text-primary" />
-              <CardTitle className="text-base font-bold">shellGPT</CardTitle>
+        <>
+          <div className="flex-1" />
+          <div className="flex items-center justify-center">
+            <Card className="w-full max-w-3xl shadow-none bg-transparent border-none">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-1">
+                  <Terminal className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base font-bold">shellGPT</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-2">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+                  <Textarea
+                    placeholder="Describe what you want your PowerShell script to do"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="flex-grow"
+                    autoFocus
+                  />
+                  <Button type="submit" className="self-end">Generate</Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="flex-1 flex items-end justify-center">
+            <div className="text-sm text-muted-foreground py-4">
+              AI-generated PowerShell scripts
             </div>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-2">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-              <Textarea
-                placeholder="Describe what you want your script to do"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="flex-grow"
-                autoFocus
-              />
-              <Button type="submit" className="self-end">Submit</Button>
-            </form>
-          </CardContent>
-        </Card>
+          </div>
+        </>
       )}
     </div>
   )

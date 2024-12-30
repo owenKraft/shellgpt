@@ -23,6 +23,7 @@
     "@shadcn/ui": "^0.0.4",
     "@types/puppeteer": "^5.4.7",
     "@types/xml2js": "^0.4.14",
+    "@vercel/analytics": "^1.4.1",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.7",
     "cheerio": "^1.0.0",
