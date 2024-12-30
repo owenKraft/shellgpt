@@ -69,6 +69,22 @@ export default function ChatInterface() {
       const data = await response.json()
       console.log('Generated script:', data.answer)
       addMessage('assistant', data.answer)
+
+      // Track script generation
+      await fetch('/api/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventName: 'Script generated',
+          properties: {
+            prompt: currentQuestion,
+            timestamp: new Date().toISOString()
+          }
+        })
+      });
+
     } catch (error) {
       console.error('Error:', error)
       addMessage('assistant', 'An error occurred while generating the script.')
@@ -83,7 +99,6 @@ export default function ChatInterface() {
     setInput('')
     setIsThinking(true)
     
-    // Add user message to chat
     addMessage('user', userMessage)
 
     try {
@@ -96,7 +111,7 @@ export default function ChatInterface() {
           prompt: userMessage,
           systemPrompt: SYSTEM_PROMPT,
           streaming: true,
-          messages: messages  // Send conversation history
+          messages: messages
         }),
       })
 
@@ -107,12 +122,27 @@ export default function ChatInterface() {
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
 
-      // Move setIsThinking(false) here, before we start reading the stream
       setIsThinking(false)
 
       while (true) {
         const { done, value } = await reader.read()
-        if (done) break
+        if (done) {
+          // Track script generation after completion
+          await fetch('/api/track', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              eventName: 'Script generated',
+              properties: {
+                prompt: userMessage,
+                timestamp: new Date().toISOString()
+              }
+            })
+          });
+          break;
+        }
         
         const chunk = decoder.decode(value, { stream: true })
         assistantMessage += chunk
@@ -136,7 +166,7 @@ export default function ChatInterface() {
       console.error('Error:', error)
       addMessage('assistant', 'An error occurred while generating the script.')
     } finally {
-      setIsThinking(false)  // Keep this as a fallback for errors
+      setIsThinking(false)
     }
   }
 

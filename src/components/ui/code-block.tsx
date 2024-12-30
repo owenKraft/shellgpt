@@ -11,7 +11,7 @@ interface CodeBlockProps {
 export function CodeBlock({ code, language }: CodeBlockProps) {
   const [hasCopied, setHasCopied] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
-
+  
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(code)
