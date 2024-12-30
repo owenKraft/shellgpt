@@ -52,11 +52,21 @@ module.exports = {
                     '4': 'hsl(var(--chart-4))',
                     '5': 'hsl(var(--chart-5))'
                 }
+            },
+            keyframes: {
+                'spinner-frame': {
+                    '0%': { opacity: 1 },
+                    '10%': { opacity: 0 },
+                }
+            },
+            animation: {
+                'spinner-frame': 'spinner-frame 800ms steps(1) infinite'
             }
         }
     },
     plugins: [
         require("tailwindcss-animate"),
-        require("@tailwindcss/typography")
+        require("@tailwindcss/typography"),
+        require('tailwind-scrollbar'),
     ],
 }
