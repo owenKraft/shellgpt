@@ -176,10 +176,10 @@ export default function ChatInterface() {
 
   return (
     <div className={cn(
-      "h-screen",
+      "h-screen flex flex-col overflow-hidden",
       showChatLayout 
-        ? "flex flex-col" 
-        : "flex justify-center items-center"
+        ? "" 
+        : "justify-center items-center"
     )}>
       {showChatLayout ? (
         <>
@@ -197,8 +197,8 @@ export default function ChatInterface() {
           </header>
 
           {/* Messages Area - Scrollable */}
-          <main className="flex-1 min-h-0">
-            <div className="h-full overflow-y-auto scrollbar scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+          <main className="flex-1 overflow-hidden">
+            <div className="h-full overflow-y-auto relative scrollbar scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
               <div className="max-w-3xl mx-auto w-full px-4 py-3 space-y-4">
                 {messages.map((message) => (
                   <Card 
@@ -276,7 +276,7 @@ export default function ChatInterface() {
           </main>
 
           {/* Input Area */}
-          <div className="bg-background border-t border-border">
+          <div className="bg-background border-t border-border flex-shrink-0">
             <div className="max-w-3xl mx-auto w-full px-4 py-3">
               <form onSubmit={handleSubmit} className="flex gap-2 items-end">
                 <Textarea

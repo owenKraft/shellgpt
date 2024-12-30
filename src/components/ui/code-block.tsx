@@ -3,10 +3,6 @@ import { Download, Copy, Check } from "lucide-react"
 import { useState } from "react"
 import { Highlight, Prism } from "prism-react-renderer"
 
-// Add PowerShell language support
-(typeof global !== "undefined" ? global : window).Prism = Prism
-require("prismjs/components/prism-powershell")
-
 interface CodeBlockProps {
   code: string
   language: string
@@ -62,11 +58,11 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
       <div className="relative">
         <Highlight
           code={code}
-          language="powershell"
+          language={language}
           theme={undefined}
         >
-          {({ className, style, tokens, getLineProps, getTokenProps }) => (
-            <pre className="bg-black rounded-lg p-4 mb-1.5 overflow-x-auto border">
+          {({ className: prismClassName, style, tokens, getLineProps, getTokenProps }) => (
+            <pre className={`${prismClassName} bg-black rounded-lg p-4 mb-1.5 overflow-x-auto border`} style={style}>
               {tokens.map((line, i) => (
                 <div key={i} {...getLineProps({ line })} className="table-row">
                   {line.map((token, key) => (
