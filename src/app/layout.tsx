@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Terminal } from 'lucide-react'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
