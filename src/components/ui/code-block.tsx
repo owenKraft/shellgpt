@@ -2,7 +2,6 @@ import { Button } from "./button"
 import { Download, Copy, Check } from "lucide-react"
 import { useState } from "react"
 import { Highlight, Prism } from "prism-react-renderer"
-import { customPrismTheme } from '@/lib/themes/prism-theme'
 
 // Add PowerShell language support
 (typeof global !== "undefined" ? global : window).Prism = Prism
@@ -61,25 +60,23 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
   return (
     <div>
       <div className="relative">
-        <div className="overflow-x-auto">
-          <Highlight
-            theme={customPrismTheme}
-            code={code}
-            language={language}
-          >
-            {({ className, style, tokens, getLineProps, getTokenProps }) => (
-              <pre className="bg-black rounded-lg p-4 mb-1.5 overflow-x-auto border">
-                {tokens.map((line, i) => (
-                  <div key={i} {...getLineProps({ line })} className="table-row">
-                    {line.map((token, key) => (
-                      <span key={key} {...getTokenProps({ token })} />
-                    ))}
-                  </div>
-                ))}
-              </pre>
-            )}
-          </Highlight>
-        </div>
+        <Highlight
+          code={code}
+          language="powershell"
+          theme={undefined}
+        >
+          {({ className, style, tokens, getLineProps, getTokenProps }) => (
+            <pre className="bg-black rounded-lg p-4 mb-1.5 overflow-x-auto border">
+              {tokens.map((line, i) => (
+                <div key={i} {...getLineProps({ line })} className="table-row">
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
+                </div>
+              ))}
+            </pre>
+          )}
+        </Highlight>
       </div>
       <div className="flex gap-1.5 justify-end">
         <Button 

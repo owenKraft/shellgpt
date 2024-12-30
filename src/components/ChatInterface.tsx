@@ -1,15 +1,12 @@
 'use client'
 
 import { useState, FormEvent, useRef, useEffect } from 'react'
-import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import ReactMarkdown from 'react-markdown'
-import Image from 'next/image'
 import { Textarea } from "@/components/ui/textarea"
 import { SYSTEM_PROMPT } from '@/lib/prompts'
 import { CodeBlock } from "@/components/ui/code-block"
-import { Loader2 } from 'lucide-react'
 import { Spinner } from "@/components/ui/spinner"
 import { Message } from "@/types/chat"
 import { v4 as uuidv4 } from 'uuid'
@@ -232,8 +229,7 @@ export default function ChatInterface() {
                               a: ({ ...props }) => (
                                 <a target="_blank" rel="noopener noreferrer" {...props} />
                               ),
-                              code: ({ node, inline, className, children, ...props }) => {
-                                // Check if the code is within a paragraph by examining the node structure
+                              code: ({ node, inline, className, children, ...props }: any) => {
                                 const isParagraphChild = node.position?.start.line === node.position?.end.line;
                                 
                                 if (inline || isParagraphChild) {

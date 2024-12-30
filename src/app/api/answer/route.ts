@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
           async start(controller) {
             try {
               for await (const chunk of stream) {
-                controller.enqueue(new TextEncoder().encode(chunk.content));
+                controller.enqueue(new TextEncoder().encode(chunk.content.toString()));
               }
               controller.close();
             } catch (error) {

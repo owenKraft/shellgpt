@@ -1,4 +1,6 @@
-export const customPrismTheme = {
+import { PrismTheme } from 'prism-react-renderer'
+
+export const customPrismTheme: PrismTheme = {
   plain: {
     color: '#e4e4e7',
     backgroundColor: 'hsl(0 0% 12%)'
@@ -8,13 +10,13 @@ export const customPrismTheme = {
       types: ['comment'],
       style: {
         color: '#6b7280',
-        fontStyle: 'italic'
+        fontStyle: 'italic' as const
       }
     },
     {
       types: ['string', 'symbol'],
       style: {
-        color: '#98c379'
+        color: '#99f6e4'
       }
     },
     {
