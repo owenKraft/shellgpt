@@ -1,7 +1,7 @@
 import { Button } from "./button"
 import { Download, Copy, Check } from "lucide-react"
 import { useState } from "react"
-import { Highlight, Prism } from "prism-react-renderer"
+import { Highlight } from "prism-react-renderer"
 
 interface CodeBlockProps {
   code: string

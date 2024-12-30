@@ -229,8 +229,11 @@ export default function ChatInterface() {
                               a: ({ ...props }) => (
                                 <a target="_blank" rel="noopener noreferrer" {...props} />
                               ),
-                              code: ({ node, inline, className, children, ...props }: any) => {
-                                const isParagraphChild = node.position?.start.line === node.position?.end.line;
+                              code: ({ node, inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & {
+                                node?: any;
+                                inline?: boolean;
+                              }) => {
+                                const isParagraphChild = node?.position?.start.line === node?.position?.end.line;
                                 
                                 if (inline || isParagraphChild) {
                                   return (
