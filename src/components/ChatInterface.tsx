@@ -328,8 +328,8 @@ export default function ChatInterface() {
             </Card>
           </div>
           <div className="flex-1 flex items-end justify-center">
-            <div className="text-sm text-muted-foreground py-4">
-              AI-generated PowerShell scripts
+            <div className="text-xs text-muted-foreground/50 py-4">
+              AI-generated PowerShell scripts.
             </div>
           </div>
         </>
