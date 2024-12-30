@@ -12,6 +12,7 @@ import { Message } from "@/types/chat"
 import { v4 as uuidv4 } from 'uuid'
 import { cn } from "@/lib/utils"
 import { Terminal } from 'lucide-react'
+import type { Components } from 'react-markdown'
 
 const USE_STREAMING = process.env.NEXT_PUBLIC_USE_STREAMING === 'true';
 
@@ -230,8 +231,14 @@ export default function ChatInterface() {
                                 <a target="_blank" rel="noopener noreferrer" {...props} />
                               ),
                               code: ({ node, inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & {
-                                node?: any;
                                 inline?: boolean;
+                                className?: string;
+                                node?: {
+                                  position?: {
+                                    start: { line: number };
+                                    end: { line: number };
+                                  };
+                                };
                               }) => {
                                 const isParagraphChild = node?.position?.start.line === node?.position?.end.line;
                                 
