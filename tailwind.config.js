@@ -61,6 +61,18 @@ module.exports = {
             },
             animation: {
                 'spinner-frame': 'spinner-frame 800ms steps(1) infinite'
+            },
+            typography: {
+                inverse: {
+                    css: {
+                        '--tw-prose-body': 'var(--foreground)',
+                        '--tw-prose-headings': 'var(--foreground)',
+                        '--tw-prose-links': 'var(--primary)',
+                        '--tw-prose-code': 'var(--foreground)',
+                        '--tw-prose-pre-code': 'var(--foreground)',
+                        '--tw-prose-pre-bg': 'transparent',
+                    }
+                }
             }
         }
     },

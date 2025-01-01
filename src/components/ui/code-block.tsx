@@ -1,17 +1,48 @@
 import { Button } from "./button"
 import { Download, Copy, Check } from "lucide-react"
-import { useState } from "react"
-import { Highlight } from "prism-react-renderer"
+import { useState, useMemo } from "react"
+import hljs from 'highlight.js/lib/core'
+import powershell from 'highlight.js/lib/languages/powershell'
+import 'highlight.js/styles/github-dark.css'
+
+hljs.registerLanguage('powershell', powershell)
 
 interface CodeBlockProps {
   code: string
   language: string
+  inline?: boolean
 }
 
-export function CodeBlock({ code, language }: CodeBlockProps) {
+export function CodeBlock({ code, language, inline = false }: CodeBlockProps) {
   const [hasCopied, setHasCopied] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   
+  if (inline) {
+    return <code className="font-mono px-1">{code}</code>
+  }
+  
+  const highlightedCode = useMemo(() => {
+    try {
+      // Map common aliases to proper language names
+      const languageMap: Record<string, string> = {
+        'ps': 'powershell',
+        'ps1': 'powershell',
+        'powers': 'powershell',
+        // Add more mappings as needed
+      }
+      
+      const normalizedLanguage = languageMap[language.toLowerCase()] || language
+
+      return hljs.highlight(code, { 
+        language: normalizedLanguage,
+        ignoreIllegals: true 
+      }).value
+    } catch (err) {
+      // Fallback to plain text if language isn't supported
+      return code
+    }
+  }, [code, language])
+
   const copyToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(code)
@@ -54,27 +85,16 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
   }
 
   return (
-    <div>
+    <>
       <div className="relative">
-        <Highlight
-          code={code}
-          language={language}
-          theme={undefined}
-        >
-          {({ className: prismClassName, style, tokens, getLineProps, getTokenProps }) => (
-            <pre className={`${prismClassName} bg-black rounded-lg p-4 mb-1.5 overflow-x-auto border`} style={style}>
-              {tokens.map((line, i) => (
-                <div key={i} {...getLineProps({ line })} className="table-row">
-                  {line.map((token, key) => (
-                    <span key={key} {...getTokenProps({ token })} />
-                  ))}
-                </div>
-              ))}
-            </pre>
-          )}
-        </Highlight>
+        <pre className="rounded-lg p-4 mb-1.5 overflow-x-auto border">
+          <code 
+            className={`language-${language}`}
+            dangerouslySetInnerHTML={{ __html: highlightedCode }}
+          />
+        </pre>
       </div>
-      <div className="flex gap-1.5 justify-end">
+      <div className="flex gap-1.5 justify-end bg-transparent">
         <Button 
           variant="ghost" 
           size="sm" 
@@ -112,6 +132,6 @@ export function CodeBlock({ code, language }: CodeBlockProps) {
           )}
         </Button>
       </div>
-    </div>
+    </>
   )
 } 

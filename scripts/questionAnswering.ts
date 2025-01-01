@@ -75,7 +75,7 @@ export async function answerQuestion(question: string, streaming = false) {
     if (streaming) {
       console.log("Starting streaming response...");
       const encoder = new TextEncoder();
-      let sources = new Set();
+      let urls = new Set();
       let hasProcessedContext = false;
 
       return new ReadableStream({
@@ -86,14 +86,24 @@ export async function answerQuestion(question: string, streaming = false) {
             });
 
             for await (const chunk of stream) {
+              // Debug logging
+              console.log("Processing chunk:", {
+                hasContext: !!chunk.context,
+                hasAnswer: chunk.answer !== undefined,
+                metadata: chunk.context?.map((doc: any) => doc.metadata)
+              });
+
               // Process context only once at the beginning
               if (!hasProcessedContext && chunk.context) {
                 chunk.context.forEach((doc: any) => {
-                  if (doc.metadata?.source) {
-                    sources.add(doc.metadata.source);
+                  console.log("Processing doc metadata:", doc.metadata);
+                  if (doc.metadata?.url) {
+                    console.log("Found URL:", doc.metadata.url);
+                    urls.add(doc.metadata.url);
                   }
                 });
                 hasProcessedContext = true;
+                console.log("Collected URLs:", Array.from(urls));
                 continue;
               }
 
@@ -103,12 +113,15 @@ export async function answerQuestion(question: string, streaming = false) {
               }
             }
 
-            // After all chunks are processed, send sources
-            if (sources.size > 0) {
-              const sourcesText = `\n\n**Sources:**\n${Array.from(sources)
-                .map(url => `- [${url}](${url})`)
+            // After all chunks are processed, send learn more section if URLs exist
+            if (urls.size > 0) {
+              console.log("Adding Learn More section with URLs:", Array.from(urls));
+              const learnMoreText = `\n\n**Learn more:**\n${Array.from(urls)
+                .map((url, index) => `${index + 1}. [${url}](${url})`)
                 .join('\n')}`;
-              controller.enqueue(encoder.encode(sourcesText));
+              controller.enqueue(encoder.encode(learnMoreText));
+            } else {
+              console.log("No URLs found to add to Learn More section");
             }
 
             controller.close();
@@ -119,11 +132,29 @@ export async function answerQuestion(question: string, streaming = false) {
         }
       });
     } else {
-      // Non-streaming response remains the same
+      // Non-streaming response with debug logging
       const response = await chain.invoke({
         input: question,
       });
-      return response.answer;
+      
+      console.log("Response context:", response.context?.map((doc: any) => doc.metadata));
+      
+      const urls = new Set(
+        response.context
+          ?.map((doc: any) => doc.metadata?.url)
+          .filter(Boolean)
+      );
+
+      console.log("Collected URLs:", Array.from(urls));
+
+      let answer = response.answer;
+      if (urls.size > 0) {
+        answer += `\n\n**Learn more:**\n${Array.from(urls)
+          .map((url, index) => `${index + 1}. [${url}](${url})`)
+          .join('\n')}`;
+      }
+
+      return answer;
     }
   } catch (error) {
     console.error("Error in answerQuestion:", error);

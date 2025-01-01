@@ -1,41 +1,29 @@
 import { PrismTheme } from 'prism-react-renderer'
 
-export const customPrismTheme: PrismTheme = {
+export const customTheme = {
   plain: {
     color: '#e4e4e7',
-    backgroundColor: 'hsl(0 0% 12%)'
+    backgroundColor: 'red'
   },
   styles: [
     {
       types: ['comment'],
       style: {
         color: '#6b7280',
-        fontStyle: 'italic' as const
+        fontStyle: 'italic'
       }
     },
     {
-      types: ['string', 'symbol'],
+      types: ['string', 'number', 'builtin', 'variable'],
       style: {
-        color: '#99f6e4'
+        color: '#22c55e'
       }
     },
     {
-      types: ['number', 'boolean'],
+      types: ['class', 'function', 'keyword', 'selector'],
       style: {
-        color: '#fca5a5'
-      }
-    },
-    {
-      types: ['variable', 'function'],
-      style: {
-        color: '#93c5fd'
-      }
-    },
-    {
-      types: ['keyword', 'operator'],
-      style: {
-        color: '#f472b6'
+        color: '#3b82f6'
       }
     }
   ]
-} 
+}

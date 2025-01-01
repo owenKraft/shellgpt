@@ -234,7 +234,7 @@ export default function ChatInterface() {
                   <Card 
                     key={message.id}
                     className={cn(
-                      "shadow-none ",
+                      "shadow-none",
                       message.role === 'user' 
                         ? "bg-background" 
                         : "bg-card"
@@ -255,40 +255,18 @@ export default function ChatInterface() {
                       {message.role === 'assistant' ? (
                         <div className="text-sm space-y-4">
                           <ReactMarkdown
+                            className="text-sm max-w-none space-y-4"
                             components={{
-                              a: ({ ...props }) => (
-                                <a target="_blank" rel="noopener noreferrer" {...props} />
-                              ),
-                              code: ({ node, inline, className, children, ...props }: React.ComponentPropsWithoutRef<'code'> & {
-                                inline?: boolean;
-                                className?: string;
-                                node?: {
-                                  position?: {
-                                    start: { line: number };
-                                    end: { line: number };
-                                  };
-                                };
-                              }) => {
-                                const isParagraphChild = node?.position?.start.line === node?.position?.end.line;
+                              code(props) {
+                                const {className, children} = props;
+                                const match = /language-(\w+)/.exec(className || '');
+                                const language = match ? match[1] : '';
                                 
-                                if (inline || isParagraphChild) {
-                                  return (
-                                    <code 
-                                      className="px-1.5 py-0.5 rounded-sm bg-primary/10 text-primary font-mono text-sm" 
-                                      {...props}
-                                    >
-                                      {children}
-                                    </code>
-                                  )
+                                // If no className, it's inline code
+                                if (!className) {
+                                  return <CodeBlock code={String(children)} language="text" inline />;
                                 }
-                                
-                                const language = (className || '').replace('language-', '') || 'powershell'
-                                return (
-                                  <CodeBlock 
-                                    code={String(children).replace(/\n$/, '')} 
-                                    language={language}
-                                  />
-                                )
+                                return <CodeBlock code={String(children).replace(/\n$/, '')} language={language} />;
                               }
                             }}
                           >

@@ -71,3 +71,86 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+.prose a:hover {
+  opacity: 0.8;
+}
+
+/* Style markdown lists */
+ul {
+  list-style-type: disc;
+  padding-left: 1.5em;
+  margin: 1em 0;
+}
+
+ul li {
+  margin: 0.5em 0;
+}
+
+/* Style markdown links in dark mode */
+.dark a {
+  color: hsl(var(--primary));
+  text-decoration: underline;
+  transition: opacity 0.2s ease;
+}
+
+.dark a:hover {
+  opacity: 0.8;
+}
+
+/* Add this CSS for code blocks */
+pre {
+  /* border: 1px solid rgb(59, 130, 246); */
+  /* OR if you want a blue background: */
+  /* background-color: rgb(30, 41, 59); */ /* Slate-800 for a dark blue background */
+  color: white;
+  /* background-color: red; */
+}
+
+/* Syntax highlighting */
+.prism-code {
+  /* Base styles for code block */
+  color: #e4e4e7;
+}
+
+.prism-code .token-line { 
+  display: table-row; 
+}
+
+/* Token colors */
+.prism-code .plain { 
+  color: #e4e4e7; 
+}
+
+.prism-code .comment { 
+  color: #6b7280; 
+  font-style: italic; 
+}
+
+.prism-code .string, 
+.prism-code .number,
+.prism-code .builtin,
+.prism-code .variable { 
+  color: #22c55e; 
+}
+
+.prism-code .class,
+.prism-code .function,
+.prism-code .keyword,
+.prism-code .selector { 
+  color: #3b82f6; 
+}
+
+/* Inline code styling */
+code {
+  background-color: hsl(16 100% 50% / 0.1); /* Same hue as primary, low opacity */
+  border-radius: 0.25rem;
+  color: hsl(var(--primary));
+}
+
+/* Don't apply the background to code blocks */
+pre code {
+  background-color: transparent;
+  color: inherit;
+}

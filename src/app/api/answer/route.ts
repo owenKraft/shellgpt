@@ -25,16 +25,32 @@ async function getRelevantDocs(question: string) {
       console.log('Metadata:', doc.metadata);
     });
     
+    // Collect unique URLs from docs
+    const urls = new Set(docs.map(doc => doc.metadata?.url).filter(Boolean));
+    
     if (docs.length === 0) {
       console.log('No relevant chunks found in the index.');
     }
     
     console.log('\n--- End RAG Context Retrieval ---\n');
-    return docs;
+    return { docs, urls };
   } catch (error) {
     console.error('Error retrieving relevant docs:', error);
-    return [];
+    return { docs: [], urls: new Set() };
   }
+}
+
+// Helper function to format URLs section
+function formatLearnMoreSection(urls: Set<string>): string {
+  if (urls.size === 0) return '';
+  
+  const sortedUrls = Array.from(urls).sort();
+  
+  return `
+
+**Learn more:**
+
+${sortedUrls.map((url, index) => `${index + 1}. [${url}](${url})`).join('\n')}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -45,9 +61,9 @@ export async function POST(req: NextRequest) {
       return new Response('Script description is required', { status: 400 });
     }
 
-    // Get relevant documents
-    const relevantDocs = await getRelevantDocs(prompt);
-    const contextText = relevantDocs.map(doc => doc.pageContent).join('\n\n');
+    // Get relevant documents and URLs
+    const { docs, urls } = await getRelevantDocs(prompt);
+    const contextText = docs.map(doc => doc.pageContent).join('\n\n');
     
     // Create conversation history with context
     const conversationMessages = [
@@ -61,7 +77,7 @@ export async function POST(req: NextRequest) {
     ];
 
     const model = new ChatOpenAI({
-      modelName: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      modelName: process.env.OPENAI_MODEL || "gpt-4-turbo-preview",
       temperature: 0.2,
       streaming: streaming || false,
       openAIApiKey: process.env.OPENAI_API_KEY,
@@ -73,9 +89,21 @@ export async function POST(req: NextRequest) {
         new ReadableStream({
           async start(controller) {
             try {
+              let fullContent = '';
               for await (const chunk of stream) {
-                controller.enqueue(new TextEncoder().encode(chunk.content.toString()));
+                const content = chunk.content.toString();
+                fullContent += content;
+                
+                // For all chunks except the last one, send as-is
+                controller.enqueue(new TextEncoder().encode(content));
               }
+              
+              // After the stream is done, append Learn More section if we have URLs
+              if (urls.size > 0) {
+                const learnMoreText = formatLearnMoreSection(urls);
+                controller.enqueue(new TextEncoder().encode(learnMoreText));
+              }
+              
               controller.close();
             } catch (error) {
               controller.error(error);
@@ -90,9 +118,16 @@ export async function POST(req: NextRequest) {
         }
       );
     }
-
+    
     const completion = await model.invoke(conversationMessages);
-    return new Response(JSON.stringify({ answer: completion.content }), {
+    let response = completion.content;
+
+    // Add Learn More section for non-streaming response
+    if (urls.size > 0) {
+      response += formatLearnMoreSection(urls);
+    }
+
+    return new Response(JSON.stringify({ answer: response }), {
       headers: {
         'Content-Type': 'application/json',
       },
