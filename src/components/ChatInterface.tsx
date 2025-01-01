@@ -262,11 +262,20 @@ export default function ChatInterface() {
                                 const match = /language-(\w+)/.exec(className || '');
                                 const language = match ? match[1] : '';
                                 
-                                // If no className, it's inline code
                                 if (!className) {
                                   return <CodeBlock code={String(children)} language="text" inline />;
                                 }
                                 return <CodeBlock code={String(children).replace(/\n$/, '')} language={language} />;
+                              },
+                              a(props) {
+                                return (
+                                  <a 
+                                    {...props} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-primary hover:opacity-80"
+                                  />
+                                );
                               }
                             }}
                           >

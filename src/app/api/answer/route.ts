@@ -105,7 +105,13 @@ export async function POST(req: NextRequest) {
               controller.error(error);
             }
           },
-        })
+        }), {
+          headers: {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+          },
+        }
       );
     }
     
