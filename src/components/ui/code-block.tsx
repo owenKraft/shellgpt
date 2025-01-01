@@ -1,6 +1,6 @@
 import { Button } from "./button"
 import { Download, Copy, Check } from "lucide-react"
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import hljs from 'highlight.js/lib/core'
 import powershell from 'highlight.js/lib/languages/powershell'
 import 'highlight.js/styles/github-dark.css'
@@ -20,28 +20,24 @@ export function CodeBlock({ code, language, inline = false }: CodeBlockProps) {
   if (inline) {
     return <code className="font-mono px-1">{code}</code>
   }
-  
-  const highlightedCode = useMemo(() => {
-    try {
-      // Map common aliases to proper language names
-      const languageMap: Record<string, string> = {
-        'ps': 'powershell',
-        'ps1': 'powershell',
-        'powers': 'powershell',
-        // Add more mappings as needed
-      }
-      
-      const normalizedLanguage = languageMap[language.toLowerCase()] || language
 
-      return hljs.highlight(code, { 
-        language: normalizedLanguage,
-        ignoreIllegals: true 
-      }).value
-    } catch (err) {
-      // Fallback to plain text if language isn't supported
-      return code
+  // Do the highlighting synchronously, outside of any hooks
+  let highlightedCode = code
+  try {
+    const languageMap: Record<string, string> = {
+      'ps': 'powershell',
+      'ps1': 'powershell',
+      'powers': 'powershell',
     }
-  }, [code, language])
+    const normalizedLanguage = languageMap[language.toLowerCase()] || language
+    highlightedCode = hljs.highlight(code, { 
+      language: normalizedLanguage,
+      ignoreIllegals: true 
+    }).value
+  } catch (err) {
+    // Fallback to plain text if language isn't supported
+    highlightedCode = code
+  }
 
   const copyToClipboard = async () => {
     try {
