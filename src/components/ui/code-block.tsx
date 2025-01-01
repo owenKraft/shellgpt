@@ -21,7 +21,7 @@ export function CodeBlock({ code, language, inline = false }: CodeBlockProps) {
     return <code className="font-mono px-1">{code}</code>
   }
 
-  // Do the highlighting synchronously, outside of any hooks
+  // Do the highlighting synchronously
   let highlightedCode = code
   try {
     const languageMap: Record<string, string> = {
@@ -34,7 +34,7 @@ export function CodeBlock({ code, language, inline = false }: CodeBlockProps) {
       language: normalizedLanguage,
       ignoreIllegals: true 
     }).value
-  } catch (err) {
+  } catch {
     // Fallback to plain text if language isn't supported
     highlightedCode = code
   }

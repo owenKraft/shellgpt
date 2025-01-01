@@ -89,12 +89,8 @@ export async function POST(req: NextRequest) {
         new ReadableStream({
           async start(controller) {
             try {
-              let fullContent = '';
               for await (const chunk of stream) {
                 const content = chunk.content.toString();
-                fullContent += content;
-                
-                // For all chunks except the last one, send as-is
                 controller.enqueue(new TextEncoder().encode(content));
               }
               
@@ -109,13 +105,7 @@ export async function POST(req: NextRequest) {
               controller.error(error);
             }
           },
-        }), {
-          headers: {
-            'Content-Type': 'text/event-stream',
-            'Cache-Control': 'no-cache',
-            'Connection': 'keep-alive',
-          },
-        }
+        })
       );
     }
     

@@ -323,7 +323,7 @@ export default function ChatInterface() {
               <CardContent className="space-y-4 pt-2">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-2">
                   <Textarea
-                    placeholder="Describe what you want your PowerShell script to do"
+                    placeholder="What should your PowerShell script do?"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}

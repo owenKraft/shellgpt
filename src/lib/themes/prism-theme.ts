@@ -1,5 +1,3 @@
-import { PrismTheme } from 'prism-react-renderer'
-
 export const customTheme = {
   plain: {
     color: '#e4e4e7',
