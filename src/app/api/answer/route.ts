@@ -71,7 +71,7 @@ async function getRelevantDocs(question: string) {
     });
     
     // Filter docs and URLs based on relevance threshold
-    const relevantDocsWithScores = docsWithScores.filter(([_, score]) => score >= RELEVANCE_THRESHOLD);
+    const relevantDocsWithScores = docsWithScores.filter(([, score]) => score >= RELEVANCE_THRESHOLD);
     const docs = relevantDocsWithScores.map(([doc]) => doc);
     
     // Only collect URLs from chunks that meet the relevance threshold
