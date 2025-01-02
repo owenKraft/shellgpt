@@ -297,6 +297,13 @@ export default function ChatInterface() {
                     </CardContent>
                   </Card>
                 )}
+                
+                {/* Safety message at the bottom */}
+                {/* {messages.length > 0 && (
+                  // <div className="text-center text-xs text-muted-foreground/50">
+                  //   Safety first! Always test these scripts.
+                  // </div>
+                )} */}
               </div>
             </div>
           </main>
@@ -346,7 +353,7 @@ export default function ChatInterface() {
           </div>
           <div className="flex-1 flex items-end justify-center">
             <div className="text-xs text-muted-foreground/50 py-4">
-              AI-generated PowerShell scripts.
+              AI-generated PowerShell scripts. Always test.
             </div>
           </div>
         </>

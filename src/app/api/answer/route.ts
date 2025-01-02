@@ -5,9 +5,51 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { PineconeStore } from '@langchain/pinecone';
 import { Pinecone } from '@pinecone-database/pinecone';
 
+async function analyzeRequest(question: string) {
+  console.time('  ⌛ Analysis');
+  try {
+    const analyzer = new ChatOpenAI({
+      modelName: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      temperature: 0,
+    });
+
+    const analysisPrompt = {
+      role: 'system',
+      content: `You are a PowerShell expert. Given a user's request, identify the most relevant PowerShell cmdlets and modules that would be needed to fulfill their request. Format your response as a comma-separated list. Be specific but concise.
+
+                Example User: "I need to check if a service is running"
+                Example Response: Get-Service, Test-Path, Start-Service, Stop-Service, Service Management
+
+                Only provide the comma-separated list, no other text.`
+    };
+
+    const userPrompt = {
+      role: 'user',
+      content: question
+    };
+
+    const analysis = await analyzer.invoke([analysisPrompt, userPrompt]);
+    return typeof analysis.content === 'string' 
+      ? analysis.content.trim() 
+      : question;
+  } finally {
+    console.timeEnd('  ⌛ Analysis');
+  }
+}
+
 async function getRelevantDocs(question: string) {
+  console.time('  ⌛ Context Retrieval');
   console.log('\n--- RAG Context Retrieval ---');
-  console.log('Query:', question);
+  console.log('Original Query:', question);
+
+  // Get PowerShell-specific context
+  const relevantConcepts = await analyzeRequest(question);
+  console.log('Relevant PowerShell Concepts:', relevantConcepts);
+  
+  const RELEVANCE_THRESHOLD = 0.82;
+  // const enhancedQuery = `You are an expert at PowerShell and helping connect users with documentation. The user wants to create a PowerShell script that will do the following: ${question}. They need documentation on the following concepts: ${relevantConcepts}.`;
+  const enhancedQuery = `${question} ${relevantConcepts}`;
+  console.log('Enhanced Query:', enhancedQuery);
   
   try {
     const embeddings = new OpenAIEmbeddings();
@@ -16,27 +58,41 @@ async function getRelevantDocs(question: string) {
     });
     const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX!);
     const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex });
-    const docs = await vectorStore.similaritySearch(question, 4);
     
-    console.log(`\nFound ${docs.length} relevant chunks:`);
-    docs.forEach((doc, i) => {
-      console.log(`\nChunk ${i + 1}:`);
+    const docsWithScores = await vectorStore.similaritySearchWithScore(enhancedQuery, 6);
+    
+    console.log(`\nFound ${docsWithScores.length} chunks (before filtering):`);
+    docsWithScores.forEach(([doc, score], i) => {
+      const relevancePercent = score * 100;
+      console.log(`\nChunk ${i + 1} (Relevance: ${relevancePercent.toFixed(2)}%):`);
       console.log('Content:', doc.pageContent);
       console.log('Metadata:', doc.metadata);
+      console.log('Meets threshold:', relevancePercent >= RELEVANCE_THRESHOLD * 100 ? 'Yes' : 'No');
     });
     
-    // Collect unique URLs from docs
-    const urls = new Set(docs.map(doc => doc.metadata?.url).filter(Boolean));
+    // Filter docs and URLs based on relevance threshold
+    const relevantDocsWithScores = docsWithScores.filter(([_, score]) => score >= RELEVANCE_THRESHOLD);
+    const docs = relevantDocsWithScores.map(([doc]) => doc);
+    
+    // Only collect URLs from chunks that meet the relevance threshold
+    const urls = new Set(
+      relevantDocsWithScores
+        .map(([doc]) => doc.metadata?.url)
+        .filter(Boolean)
+    );
+    
+    console.log(`\nAfter filtering (${RELEVANCE_THRESHOLD * 100}% threshold):`);
+    console.log(`Relevant chunks: ${docs.length}`);
+    console.log(`Relevant URLs: ${urls.size}`);
     
     if (docs.length === 0) {
-      console.log('No relevant chunks found in the index.');
+      console.log('No chunks met the relevance threshold.');
     }
     
     console.log('\n--- End RAG Context Retrieval ---\n');
     return { docs, urls };
-  } catch (error) {
-    console.error('Error retrieving relevant docs:', error);
-    return { docs: [], urls: new Set() };
+  } finally {
+    console.timeEnd('  ⌛ Context Retrieval');
   }
 }
 
@@ -54,6 +110,7 @@ ${sortedUrls.map((url, index) => `${index + 1}. [${url}](${url})`).join('\n')}`;
 }
 
 export async function POST(req: NextRequest) {
+  console.time('📝 Total Request');
   try {
     const { prompt, systemPrompt, streaming, messages } = await req.json();
     
@@ -83,8 +140,10 @@ export async function POST(req: NextRequest) {
       openAIApiKey: process.env.OPENAI_API_KEY,
     });
 
+    console.time('  ⌛ LLM Generation');
     if (streaming) {
       const stream = await model.stream(conversationMessages);
+      console.timeEnd('  ⌛ LLM Generation');
       return new Response(
         new ReadableStream({
           async start(controller) {
@@ -116,6 +175,7 @@ export async function POST(req: NextRequest) {
     }
     
     const completion = await model.invoke(conversationMessages);
+    console.timeEnd('  ⌛ LLM Generation');
     let response = completion.content;
 
     // Add Learn More section for non-streaming response
@@ -128,13 +188,7 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'application/json',
       },
     });
-  } catch (error) {
-    console.error('Error processing request:', error);
-    return new Response(JSON.stringify({ error: 'An error occurred processing your request' }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+  } finally {
+    console.timeEnd('📝 Total Request');
   }
 }
