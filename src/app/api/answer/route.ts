@@ -9,6 +9,8 @@ interface DocWithMetadata {
   metadata: { url?: string; text?: string; [key: string]: any };
 }
 
+type DocScorePair = [DocWithMetadata, number];
+
 async function analyzeRequest(question: string) {
   console.time('  ⌛ Analysis');
   try {
@@ -75,17 +77,14 @@ async function getRelevantDocs(question: string) {
     const results = await pineconeIndex.query(query);
 
     // Convert results to the format we need
-    const docsWithScores = results.matches?.map(match => [
+    const docsWithScores: DocScorePair[] = results.matches?.map(match => [
       { pageContent: match.metadata?.text ?? '', metadata: match.metadata ?? {} } as DocWithMetadata,
       match.score ?? 0
     ]) || [];
     
-    // First, define a type for our score pairs
-    type DocScorePair = [DocWithMetadata, number];
-    
     // Then update the map functions to use this type
-    const enhancedDocsWithScores = docsWithScores.map((pair) => {
-      const [doc, score] = pair as DocScorePair;
+    const enhancedDocsWithScores: DocScorePair[] = docsWithScores.map((pair) => {
+      const [doc, score] = pair;
       const url = doc.metadata?.url?.toLowerCase() || '';
       
       console.log(`\nURL Relevance Check for ${url}:`);
@@ -107,7 +106,7 @@ async function getRelevantDocs(question: string) {
       console.log(`- URL Boost: ${(urlBoost * 100).toFixed(2)}%`);
       console.log(`- Final Score: ${(enhancedScore * 100).toFixed(2)}%`);
       
-      return [doc, enhancedScore] as DocScorePair;
+      return [doc, enhancedScore];
     });
     
     // Sort by enhanced scores
