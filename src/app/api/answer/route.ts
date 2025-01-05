@@ -83,7 +83,7 @@ async function getRelevantDocs(question: string) {
     ]) || [];
     
     // Then update the map functions to use this type
-    const enhancedDocsWithScores: DocScorePair[] = docsWithScores.map((pair) => {
+    const enhancedDocsWithScores: DocScorePair[] = docsWithScores.map((pair: DocScorePair) => {
       const [doc, score] = pair;
       const url = doc.metadata?.url?.toLowerCase() || '';
       
@@ -106,7 +106,7 @@ async function getRelevantDocs(question: string) {
       console.log(`- URL Boost: ${(urlBoost * 100).toFixed(2)}%`);
       console.log(`- Final Score: ${(enhancedScore * 100).toFixed(2)}%`);
       
-      return [doc, enhancedScore];
+      return [doc, enhancedScore] as DocScorePair;
     });
     
     // Sort by enhanced scores
