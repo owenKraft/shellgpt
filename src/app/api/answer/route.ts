@@ -2,7 +2,6 @@ import { NextRequest } from 'next/server';
 import { ChatOpenAI } from '@langchain/openai';
 import { Message } from "@/types/chat";
 import { OpenAIEmbeddings } from '@langchain/openai';
-import { PineconeStore } from '@langchain/pinecone';
 import { Pinecone } from '@pinecone-database/pinecone';
 
 interface DocWithMetadata {
@@ -77,7 +76,7 @@ async function getRelevantDocs(question: string) {
 
     // Convert results to the format we need
     const docsWithScores = results.matches?.map(match => [
-      { pageContent: match.metadata?.text ?? '', metadata: match.metadata ?? {} },
+      { pageContent: match.metadata?.text ?? '', metadata: match.metadata ?? {} } as DocWithMetadata,
       match.score ?? 0
     ]) || [];
     
