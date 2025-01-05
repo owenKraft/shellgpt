@@ -6,7 +6,7 @@ import { Pinecone } from '@pinecone-database/pinecone';
 
 interface DocWithMetadata {
   pageContent: string;
-  metadata: { url?: string; text?: string; [key: string]: any };
+  metadata: { url?: string; text?: string; [key: string]: unknown };
 }
 
 type DocScorePair = [DocWithMetadata, number];
