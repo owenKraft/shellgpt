@@ -26,7 +26,7 @@ async function analyzeRequest(question: string) {
                 Example User: "I need to check if a service is running"
                 Example Response: Get-Service, Test-Path, Start-Service, Stop-Service, Service Management
 
-                Only provide the comma-separated list, no other text.`
+                Only provide the comma-separated list, no other text. If the user's request is not PowerShell-related, return an empty string.`
     };
 
     const userPrompt = {
@@ -63,8 +63,8 @@ async function getRelevantDocs(question: string) {
     
     // Split concepts into array and clean them
     const concepts = relevantConcepts
-      .split(',')
-      .map(c => c.trim().toLowerCase());
+      ? relevantConcepts.split(',').map(c => c.trim().toLowerCase()).filter(Boolean)
+      : [];
     
     // Create a query using just vector similarity
     const query = {
@@ -86,6 +86,10 @@ async function getRelevantDocs(question: string) {
     const enhancedDocsWithScores: DocScorePair[] = docsWithScores.map(pair => {
       const [doc, score] = pair;
       const url = doc.metadata?.url?.toLowerCase() || '';
+      
+      if (concepts.length === 0) {
+        return [doc, score]; // Return original score if no PowerShell concepts found
+      }
       
       console.log(`\nURL Relevance Check for ${url}:`);
       console.log('Checking concepts:', concepts);
