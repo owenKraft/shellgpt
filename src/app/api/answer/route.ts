@@ -5,6 +5,11 @@ import { OpenAIEmbeddings } from '@langchain/openai';
 import { PineconeStore } from '@langchain/pinecone';
 import { Pinecone } from '@pinecone-database/pinecone';
 
+interface DocWithMetadata {
+  pageContent: string;
+  metadata: { url?: string; text?: string; [key: string]: any };
+}
+
 async function analyzeRequest(question: string) {
   console.time('  ⌛ Analysis');
   try {
@@ -47,9 +52,6 @@ async function getRelevantDocs(question: string) {
   console.log('Relevant PowerShell Concepts:', relevantConcepts);
   
   const RELEVANCE_THRESHOLD = 0.82;
-  // const enhancedQuery = `You are an expert at PowerShell and helping connect users with documentation. The user wants to create a PowerShell script that will do the following: ${question}. They need documentation on the following concepts: ${relevantConcepts}.`;
-  const enhancedQuery = `${question} ${relevantConcepts}`;
-  console.log('Enhanced Query:', enhancedQuery);
   
   try {
     const embeddings = new OpenAIEmbeddings();
@@ -57,33 +59,81 @@ async function getRelevantDocs(question: string) {
       apiKey: process.env.PINECONE_API_KEY!,
     });
     const pineconeIndex = pinecone.Index(process.env.PINECONE_INDEX!);
-    const vectorStore = await PineconeStore.fromExistingIndex(embeddings, { pineconeIndex });
     
-    const docsWithScores = await vectorStore.similaritySearchWithScore(enhancedQuery, 6);
+    // Split concepts into array and clean them
+    const concepts = relevantConcepts
+      .split(',')
+      .map(c => c.trim().toLowerCase());
     
-    console.log(`\nFound ${docsWithScores.length} chunks (before filtering):`);
-    docsWithScores.forEach(([doc, score], i) => {
+    // Create a query using just vector similarity
+    const query = {
+      vector: await embeddings.embedQuery(question + " " + relevantConcepts),
+      topK: 6, // Get more results initially
+      includeMetadata: true,
+    };
+
+    // Query Pinecone
+    const results = await pineconeIndex.query(query);
+
+    // Convert results to the format we need
+    const docsWithScores = results.matches?.map(match => [
+      { pageContent: match.metadata?.text ?? '', metadata: match.metadata ?? {} },
+      match.score ?? 0
+    ]) || [];
+    
+    // Boost scores for documents whose URLs contain relevant concepts
+    const enhancedDocsWithScores = docsWithScores.map((pair) => {
+      const [doc, score] = pair as [DocWithMetadata, number];
+      const url = doc.metadata?.url?.toLowerCase() || '';
+      
+      console.log(`\nURL Relevance Check for ${url}:`);
+      console.log('Checking concepts:', concepts);
+      
+      const matches = concepts.filter(concept => {
+        const matches = url.includes(concept);
+        console.log(`- Checking concept: "${concept}" -> ${matches ? 'MATCH' : 'no match'}`);
+        return matches;
+      });
+      
+      const conceptMatches = matches.length;
+      const urlBoost = conceptMatches * 0.05;
+      const enhancedScore = Math.min(score + urlBoost, 1.0);
+      
+      console.log(`- Original Score: ${(score * 100).toFixed(2)}%`);
+      console.log(`- Matching concepts: ${matches.join(', ')}`);
+      console.log(`- Total Matches: ${conceptMatches}`);
+      console.log(`- URL Boost: ${(urlBoost * 100).toFixed(2)}%`);
+      console.log(`- Final Score: ${(enhancedScore * 100).toFixed(2)}%`);
+      
+      return [doc, enhancedScore] as [any, number];
+    });
+    
+    // Sort by enhanced scores
+    enhancedDocsWithScores.sort((a, b) => b[1] - a[1]);
+    
+    console.log(`\nFound ${enhancedDocsWithScores.length} chunks (before filtering):`);
+    enhancedDocsWithScores.forEach(([doc, score], i) => {
       const relevancePercent = score * 100;
       console.log(`\nChunk ${i + 1} (Relevance: ${relevancePercent.toFixed(2)}%):`);
-      console.log('Content:', doc.pageContent);
-      console.log('Metadata:', doc.metadata);
+      console.log('URL:', doc.metadata?.url);
       console.log('Meets threshold:', relevancePercent >= RELEVANCE_THRESHOLD * 100 ? 'Yes' : 'No');
     });
     
     // Filter docs and URLs based on relevance threshold
-    const relevantDocsWithScores = docsWithScores.filter(([, score]) => score >= RELEVANCE_THRESHOLD);
+    const relevantDocsWithScores = enhancedDocsWithScores.filter(([, score]) => score >= RELEVANCE_THRESHOLD);
     const docs = relevantDocsWithScores.map(([doc]) => doc);
-    
-    // Only collect URLs from chunks that meet the relevance threshold
-    const urls = new Set(
-      relevantDocsWithScores
-        .map(([doc]) => doc.metadata?.url)
-        .filter(Boolean)
-    );
-    
+
+    // Keep URLs in order of relevance, removing duplicates
+    const urls = relevantDocsWithScores
+      .map(([doc]) => doc.metadata?.url)
+      .filter((url, index, self) => 
+        url && // Remove nulls/undefined
+        self.indexOf(url) === index // Remove duplicates while preserving order
+      ) as string[];
+
     console.log(`\nAfter filtering (${RELEVANCE_THRESHOLD * 100}% threshold):`);
     console.log(`Relevant chunks: ${docs.length}`);
-    console.log(`Relevant URLs: ${urls.size}`);
+    console.log(`Relevant URLs: ${urls.length}`);
     
     if (docs.length === 0) {
       console.log('No chunks met the relevance threshold.');
@@ -97,16 +147,14 @@ async function getRelevantDocs(question: string) {
 }
 
 // Helper function to format URLs section
-function formatLearnMoreSection(urls: Set<string>): string {
-  if (urls.size === 0) return '';
-  
-  const sortedUrls = Array.from(urls).sort();
+function formatLearnMoreSection(urls: string[]): string {
+  if (urls.length === 0) return '';
   
   return `
 
 **Learn more:**
 
-${sortedUrls.map((url, index) => `${index + 1}. [${url}](${url})`).join('\n')}`;
+${urls.map((url, index) => `${index + 1}. [${url}](${url})`).join('\n')}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -154,7 +202,7 @@ export async function POST(req: NextRequest) {
               }
               
               // After the stream is done, append Learn More section if we have URLs
-              if (urls.size > 0) {
+              if (urls.length > 0) {
                 const learnMoreText = formatLearnMoreSection(urls);
                 controller.enqueue(new TextEncoder().encode(learnMoreText));
               }
@@ -179,7 +227,7 @@ export async function POST(req: NextRequest) {
     let response = completion.content;
 
     // Add Learn More section for non-streaming response
-    if (urls.size > 0) {
+    if (urls.length > 0) {
       response += formatLearnMoreSection(urls);
     }
 
