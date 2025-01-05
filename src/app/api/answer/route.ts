@@ -80,9 +80,12 @@ async function getRelevantDocs(question: string) {
       match.score ?? 0
     ]) || [];
     
-    // Boost scores for documents whose URLs contain relevant concepts
+    // First, define a type for our score pairs
+    type DocScorePair = [DocWithMetadata, number];
+    
+    // Then update the map functions to use this type
     const enhancedDocsWithScores = docsWithScores.map((pair) => {
-      const [doc, score] = pair as [DocWithMetadata, number];
+      const [doc, score] = pair as DocScorePair;
       const url = doc.metadata?.url?.toLowerCase() || '';
       
       console.log(`\nURL Relevance Check for ${url}:`);
@@ -104,7 +107,7 @@ async function getRelevantDocs(question: string) {
       console.log(`- URL Boost: ${(urlBoost * 100).toFixed(2)}%`);
       console.log(`- Final Score: ${(enhancedScore * 100).toFixed(2)}%`);
       
-      return [doc, enhancedScore] as [any, number];
+      return [doc, enhancedScore] as DocScorePair;
     });
     
     // Sort by enhanced scores
