@@ -83,8 +83,7 @@ async function getRelevantDocs(question: string) {
     ]) || [];
     
     // Then update the map functions to use this type
-    const enhancedDocsWithScores: DocScorePair[] = docsWithScores.map((pair: DocScorePair) => {
-      const [doc, score] = pair;
+    const enhancedDocsWithScores: DocScorePair[] = docsWithScores.map(([doc, score]: [DocWithMetadata, number]) => {
       const url = doc.metadata?.url?.toLowerCase() || '';
       
       console.log(`\nURL Relevance Check for ${url}:`);
