@@ -1,35 +1,63 @@
 import { Button } from "./button"
 import { Download, Copy, Check } from "lucide-react"
-import { useState } from "react"
-import hljs from 'highlight.js/lib/core'
+import { useState, useEffect } from "react"
+import hljs from 'highlight.js'
 import powershell from 'highlight.js/lib/languages/powershell'
-import 'highlight.js/styles/github-dark.css'
+import { useTheme } from 'next-themes'
 
 hljs.registerLanguage('powershell', powershell)
 
 interface CodeBlockProps {
   code: string
-  language: string
+  language?: string
   inline?: boolean
 }
 
 export function CodeBlock({ code, language, inline = false }: CodeBlockProps) {
+  const { resolvedTheme } = useTheme()
   const [hasCopied, setHasCopied] = useState(false)
   const [isDownloading, setIsDownloading] = useState(false)
   
+  // Handle theme switching
+  useEffect(() => {
+    // Remove any existing highlight.js theme links
+    document.querySelectorAll('link[data-hljs-theme]').forEach(el => el.remove())
+
+    // Create and append the appropriate theme
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.setAttribute('data-hljs-theme', resolvedTheme || 'dark')
+    
+    if (resolvedTheme === 'light') {
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css'
+    } else {
+      link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css'
+    }
+    
+    document.head.appendChild(link)
+  }, [resolvedTheme])
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('hljs-dark', resolvedTheme === 'dark')
+    document.documentElement.classList.toggle('hljs-light', resolvedTheme === 'light')
+  }, [resolvedTheme])
+
   if (inline) {
     return <code className="font-mono px-1">{code}</code>
   }
 
   // Do the highlighting synchronously
   let highlightedCode = code
+  const languageMap: Record<string, string> = {
+    'ps': 'powershell',
+    'ps1': 'powershell',
+    'powers': 'powershell',
+  }
+
+  // Handle undefined language case
+  const normalizedLanguage = language ? (languageMap[language.toLowerCase()] || language) : 'plaintext'
+
   try {
-    const languageMap: Record<string, string> = {
-      'ps': 'powershell',
-      'ps1': 'powershell',
-      'powers': 'powershell',
-    }
-    const normalizedLanguage = languageMap[language.toLowerCase()] || language
     highlightedCode = hljs.highlight(code, { 
       language: normalizedLanguage,
       ignoreIllegals: true 

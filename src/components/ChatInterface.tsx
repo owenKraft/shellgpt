@@ -12,6 +12,7 @@ import { Message } from "@/types/chat"
 import { v4 as uuidv4 } from 'uuid'
 import { cn } from "@/lib/utils"
 import { Terminal } from 'lucide-react'
+import { ThemeToggle } from './ThemeToggle'
 
 const USE_STREAMING = process.env.NEXT_PUBLIC_USE_STREAMING === 'true';
 
@@ -207,28 +208,23 @@ export default function ChatInterface() {
   return (
     <div className={cn(
       "h-screen flex flex-col overflow-hidden",
-      showChatLayout 
-        ? "" 
-        : "justify-between"
+      showChatLayout ? "" : "justify-between"
     )}>
       {showChatLayout ? (
         <>
-          {/* Fixed Header */}
           <header className="bg-background border-b border-border">
-            <div className="max-w-3xl mx-auto w-full px-4">
-              <div 
-                className="flex items-center gap-2 h-12 cursor-pointer hover:opacity-80"
-                onClick={resetChat}
-              >
+            <div className="max-w-3xl mx-auto w-full px-4 flex items-center justify-between h-12">
+              <div className="flex items-center gap-2 cursor-pointer hover:opacity-80" onClick={resetChat}>
                 <Terminal className="h-5 w-5 text-primary" />
                 <h1 className="text-base font-bold">shellGPT</h1>
               </div>
+              <ThemeToggle />
             </div>
           </header>
 
           {/* Messages Area - Scrollable */}
           <main className="flex-1 overflow-hidden">
-            <div className="h-full overflow-y-auto relative scrollbar scrollbar-track-transparent scrollbar-thumb-white/10 hover:scrollbar-thumb-white/20">
+            <div className="h-full overflow-y-auto relative scrollbar scrollbar-track-transparent scrollbar-thumb-muted-foreground/20">
               <div className="max-w-3xl mx-auto w-full px-4 py-3 space-y-4">
                 {messages.map((message) => (
                   <Card 
@@ -327,6 +323,9 @@ export default function ChatInterface() {
         </>
       ) : (
         <>
+          <div className="w-full px-4 py-3 flex justify-end">
+            <ThemeToggle />
+          </div>
           <div className="flex-1" />
           <div className="flex items-center justify-center">
             <Card className="w-full max-w-3xl shadow-none bg-transparent border-none">
@@ -352,7 +351,7 @@ export default function ChatInterface() {
             </Card>
           </div>
           <div className="flex-1 flex items-end justify-center">
-            <div className="text-xs text-muted-foreground/50 py-4">
+            <div className="text-xs subtitle py-4">
               AI-generated PowerShell scripts. Always test.
             </div>
           </div>

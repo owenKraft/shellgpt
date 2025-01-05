@@ -14,36 +14,36 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 98%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 16 100% 50%;
-    --primary-foreground: 0 0% 98%;
+    --primary-foreground: 240 10% 3.9%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 240 3.8% 46.1%;
     --accent: 0 0% 14.9%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 16 100% 50%;
     --radius: 0.5rem;
   }
   .dark {
-    --background: 0 0% 3.9%;
+    --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
+    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
+    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 16 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 98%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
@@ -89,7 +89,7 @@ ul li {
 }
 
 /* Style markdown links in dark mode */
-.dark a {
+a {
   color: hsl(var(--primary));
   text-decoration: underline;
   transition: opacity 0.2s ease;
@@ -99,52 +99,14 @@ ul li {
   opacity: 0.8;
 }
 
-/* Add this CSS for code blocks */
+/* Remove all the old code block styling */
 pre {
-  /* border: 1px solid rgb(59, 130, 246); */
-  /* OR if you want a blue background: */
-  /* background-color: rgb(30, 41, 59); */ /* Slate-800 for a dark blue background */
-  color: white;
-  /* background-color: red; */
-}
-
-/* Syntax highlighting */
-.prism-code {
-  /* Base styles for code block */
-  color: #e4e4e7;
-}
-
-.prism-code .token-line { 
-  display: table-row; 
-}
-
-/* Token colors */
-.prism-code .plain { 
-  color: #e4e4e7; 
-}
-
-.prism-code .comment { 
-  color: #6b7280; 
-  font-style: italic; 
-}
-
-.prism-code .string, 
-.prism-code .number,
-.prism-code .builtin,
-.prism-code .variable { 
-  color: #22c55e; 
-}
-
-.prism-code .class,
-.prism-code .function,
-.prism-code .keyword,
-.prism-code .selector { 
-  color: #3b82f6; 
+  border-radius: var(--radius);
 }
 
 /* Inline code styling */
 code {
-  background-color: hsl(16 100% 50% / 0.1); /* Same hue as primary, low opacity */
+  background-color: hsl(16 100% 50% / 0.1);
   border-radius: 0.25rem;
   color: hsl(var(--primary));
 }
@@ -154,3 +116,9 @@ pre code {
   background-color: transparent;
   color: inherit;
 }
+
+/* Add this CSS for the subtitle text */
+.subtitle {
+  color: hsl(var(--muted-foreground));
+}
+
